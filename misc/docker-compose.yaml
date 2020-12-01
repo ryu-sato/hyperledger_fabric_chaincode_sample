@@ -64,7 +64,6 @@ services:
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
-      - GO_MODULE_NAME=github.com/ryu-sato/chaincode_sample
     working_dir: /opt/gopath/src/chaincodedev
     command: /bin/bash -c 'sleep 10 && ./script.sh'
     volumes:
@@ -72,7 +71,7 @@ services:
       - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
       - ${HLF_SMP_CHAINDEV_DIR}/../chaincode:/opt/gopath/src/chaincodedev/chaincode
       - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/chaincodedev/
-      - ./:/opt/gopath/src/${GO_MODULE_NAME}
+      - ../:/opt/gopath/src/${GO_MODULE_NAME}
     depends_on:
       - orderer
       - peer
@@ -90,14 +89,13 @@ services:
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
-      - GO_MODULE_NAME=github.com/ryu-sato/chaincode_sample
     working_dir: /opt/gopath/src/chaincode
     command: /bin/sh -c 'sleep 6000000'
     volumes:
       - /var/run/:/host/var/run/
       - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
       - ${HLF_SMP_CHAINDEV_DIR}/../chaincode:/opt/gopath/src/chaincode
-      - ./:/opt/gopath/src/${GO_MODULE_NAME}
+      - ../:/opt/gopath/src/${GO_MODULE_NAME}
     depends_on:
       - orderer
       - peer
