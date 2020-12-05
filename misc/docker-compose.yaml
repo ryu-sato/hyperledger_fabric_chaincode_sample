@@ -5,14 +5,14 @@ services:
     container_name: orderer
     image: hyperledger/fabric-orderer:1.4.7
     environment:
-      - FABRIC_LOGGING_SPEC=debug
+      - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=orderer
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=orderer.block
       - ORDERER_GENERAL_LOCALMSPID=DEFAULT
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp
-      - GRPC_TRACE=all=true,
       - GRPC_VERBOSITY=debug
+      - GRPC_TRACE=all=true,
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
@@ -24,12 +24,12 @@ services:
     container_name: peer
     image: hyperledger/fabric-peer:1.4.7
     environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=peer
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -57,15 +57,23 @@ services:
     image: hyperledger/fabric-tools:1.4.7
     tty: true
     environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
     working_dir: /opt/gopath/src/chaincodedev
-    command: /bin/bash -c 'sleep 10 && ./script.sh'
+    command:
+      - /bin/bash
+      - -c
+      # Peer が起動終わるまで待つよう sleep 10 を加えている
+      - |
+        sleep 10 &&
+        peer channel create -c myc -f myc.tx -o orderer:7050 &&
+        peer channel join -b myc.block &&
+        tail -f /dev/null
     volumes:
       - /var/run/:/host/var/run/
       - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
@@ -82,15 +90,15 @@ services:
     image: hyperledger/fabric-ccenv:1.4.7
     tty: true
     environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=example02
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
     working_dir: /opt/gopath/src/chaincode
-    command: /bin/sh -c 'sleep 6000000'
+    command: /bin/sh -c 'tail -f /dev/null'
     volumes:
       - /var/run/:/host/var/run/
       - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
@@ -99,4 +107,3 @@ services:
     depends_on:
       - orderer
       - peer
-
