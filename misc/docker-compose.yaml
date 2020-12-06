@@ -8,7 +8,7 @@ services:
       - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=orderer
       - ORDERER_GENERAL_GENESISMETHOD=file
-      - ORDERER_GENERAL_GENESISFILE=orderer.block
+      - ORDERER_GENERAL_GENESISFILE=genesis.block
       - ORDERER_GENERAL_LOCALMSPID=DEFAULT
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp
       - GRPC_VERBOSITY=debug
@@ -17,7 +17,7 @@ services:
     command: orderer
     volumes:
       - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
-      - ${HLF_SMP_CHAINDEV_DIR}/orderer.block:/etc/hyperledger/fabric/orderer.block
+      - ${HLF_SMP_CHAINDEV_DIR}/genesis.block:/etc/hyperledger/fabric/genesis.block
     ports:
       - 7050:7050
   peer:
@@ -71,8 +71,8 @@ services:
       # Peer が起動終わるまで待つよう sleep 10 を加えている
       - |
         sleep 10 &&
-        peer channel create -c myc -f myc.tx -o orderer:7050 &&
-        peer channel join -b myc.block &&
+        peer channel create -c mychannel -f mychannel.tx -o orderer:7050 &&
+        peer channel join -b mychannel.block &&
         tail -f /dev/null
     volumes:
       - /var/run/:/host/var/run/
