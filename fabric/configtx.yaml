@@ -5,32 +5,41 @@ Orderer: &OrdererDefaults
 Application: &ApplicationDefaults
   Organizations: {}
 
+Channel: &ChannelDefaults
+
 Organizations:
-  - &OrdererOrg
-    Name: OrdererOrg
-    ID: OrdererMSP
-    MSPDir: crypto-config/ordererOrganizations/example.com/msp
   - &Org1
-    Name: Org1MSP
-    ID: Org1MSP
-    MSPDir: crypto-config/peerOrganizations/org1.example.com/msp
+    Name: Org1
+    ID: DEFAULT
+    MSPDir: crypto-config/peerOrganizations/org1.example.com/msp/
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('DEFAULT.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('DEFAULT.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('DEFAULT.member')"
     AnchorPeers:
       - Host: peer0.org1.example.com
         Port: 7051
 
 Profiles:
-  OrdererGenesis:
+  Genesis:
     Orderer:
       <<: *OrdererDefaults
       Organizations:
-        - *OrdererOrg
+        - *Org1
     Consortiums:
       SampleConsortium:
         Organizations:
           - *Org1
   Channel:
     Consortium: SampleConsortium
-    Application:
-      <<: *ApplicationDefaults
-      Organizations:
-        - *Org1
+    Application: {}
+    # Application:
+    #   <<: *ApplicationDefaults
+    #   Organizations:
+    #     - *Org1

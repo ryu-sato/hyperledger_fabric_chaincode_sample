@@ -12,15 +12,16 @@ docker-compose up -d
 
 ```bash
 # mspを作成する
-rm -rf msp fabric/crypto-config
+rm -rf fabric/crypto-config
 cd fabric
-cryptogen generate --config=./crypto-config.yaml --output crypto-config
-cp -r crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp ../
+cryptogen generate --config crypto-config.yaml --output crypto-config
 cd ..
 
 # Genesisブロックを作成する
-configtxgen -configPath fabric -channelID mychannel -profile OrdererGenesis -outputBlock genesis.block
+rm genesis.block
+configtxgen -configPath fabric -channelID mychannel -profile Genesis -outputBlock genesis.block
 
 # channelブロックを作成する
-configtxgen -configPath fabric -profile Channel --outputCreateChannelTx mychannel.tx
+rm mychannel.tx
+configtxgen -configPath fabric -channelID mychannel -profile Channel --outputCreateChannelTx mychannel.tx
 ```
