@@ -3,41 +3,37 @@ version: '2'
 services:
   orderer:
     container_name: orderer
-    image: hyperledger/fabric-orderer:1.4.7
+    image: hyperledger/fabric-orderer
     environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=debug
       - ORDERER_GENERAL_LISTENADDRESS=orderer
       - ORDERER_GENERAL_GENESISMETHOD=file
-      - ORDERER_GENERAL_GENESISFILE=genesis.block
-      - ORDERER_GENERAL_LOCALMSPID=ORDERER
+      - ORDERER_GENERAL_GENESISFILE=orderer.block
+      - ORDERER_GENERAL_LOCALMSPID=DEFAULT
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp
-      - GRPC_VERBOSITY=debug
       - GRPC_TRACE=all=true,
+      - GRPC_VERBOSITY=debug
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/msp:/etc/hyperledger/msp
-      - ${HLF_SMP_CHAINDEV_DIR}/genesis.block:/etc/hyperledger/fabric/genesis.block
+      - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
+      - ${HLF_SMP_CHAINDEV_DIR}/orderer.block:/etc/hyperledger/fabric/orderer.block
     ports:
       - 7050:7050
   peer:
     container_name: peer
-    image: hyperledger/fabric-peer:1.4.7
+    image: hyperledger/fabric-peer
     environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=peer
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer:7051
-      - CORE_PEER_LOCALMSPID=PEER
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
-      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - COUCHDB_USERNAME=couchdb
-      - COUCHDB_PASSWORD=password
+      - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
     volumes:
-      - /var/run/:/host/var/run/
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp
+        - /var/run/:/host/var/run/
+        - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start --peer-chaincodedev=true
     ports:
@@ -45,70 +41,47 @@ services:
       - 7053:7053
     depends_on:
       - orderer
-      - couchdb
-  couchdb:
-    image: hyperledger/fabric-couchdb:0.4.10
-    environment:
-      - COUCHDB_USERNAME=couchdb
-      - COUCHDB_PASSWORD=password
 
   cli:
     container_name: cli
-    image: hyperledger/fabric-tools:1.4.7
+    image: hyperledger/fabric-tools
     tty: true
     environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
       - GOPATH=/opt/gopath
-      - CORE_PEER_ID=PEER
-      - CORE_PEER_ADDRESS=peer:7051
-      - CORE_PEER_LOCALMSPID=PEER
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-    working_dir: /opt/gopath/src/chaincodedev/chaincode
-    command:
-      - /bin/bash
-      - -c
-      # Peer の起動が終わるまで待つよう sleep 10 を加えている
-      - |
-        tail -f /dev/null &&
-        sleep 10 &&
-        ls &&
-        echo "----- peer channel create -c mychannel -f mychannel.tx -o orderer:7050" &&
-        peer channel create -c mychannel -f mychannel.tx -o orderer:7050 &&
-        echo "----- peer channel join -b mychannel.tx"
-        # peer channel join -b mychannel.block &&
-        peer channel fetch config mychannel.block -c mychannel &&
-        tail -f /dev/null
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer:7051
+      - CORE_PEER_LOCALMSPID=DEFAULT
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+    working_dir: /opt/gopath/src/${GO_MODULE_NAME}
+    command: /bin/bash -c './script.sh'
     volumes:
-      - /var/run/:/host/var/run/
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/configtx.yaml:/etc/hyperledger/fabric/configtx.yaml
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp:/etc/hyperledger/msp
-      - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/chaincodedev/chaincode
-      - ../:/opt/gopath/src/${GO_MODULE_NAME}
+        - /var/run/:/host/var/run/
+        - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
+        - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/${GO_MODULE_NAME}
     depends_on:
       - orderer
       - peer
-      - couchdb
 
   chaincode:
     container_name: chaincode
-    image: hyperledger/fabric-ccenv:1.4.7
+    image: hyperledger/fabric-ccenv
     tty: true
     environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
       - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=example02
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_LOCALMSPID=DEFAULT
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
-      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-    working_dir: /opt/gopath/src/chaincode
-    command: /bin/sh -c 'tail -f /dev/null'
+    working_dir: /opt/gopath/src/${GO_MODULE_NAME}
+    command: /bin/sh -c 'sleep 6000000'
     volumes:
-      - /var/run/:/host/var/run/
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp:/etc/hyperledger/msp
-      - ${HLF_SMP_CHAINDEV_DIR}/../chaincode:/opt/gopath/src/chaincode
-      - ../:/opt/gopath/src/${GO_MODULE_NAME}
+        - /var/run/:/host/var/run/
+        - ${HLF_SMP_CHAINDEV_DIR}/msp:/etc/hyperledger/msp
+        - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/${GO_MODULE_NAME}
     depends_on:
       - orderer
       - peer
