@@ -9,14 +9,14 @@ services:
       - ORDERER_GENERAL_LISTENADDRESS=orderer
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=genesis.block
-      - ORDERER_GENERAL_LOCALMSPID=DEFAULT
+      - ORDERER_GENERAL_LOCALMSPID=ORDERER
       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp
       - GRPC_VERBOSITY=debug
       - GRPC_TRACE=all=true,
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
-      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp
+      - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/msp:/etc/hyperledger/msp
       - ${HLF_SMP_CHAINDEV_DIR}/genesis.block:/etc/hyperledger/fabric/genesis.block
     ports:
       - 7050:7050
@@ -28,7 +28,7 @@ services:
       - CORE_PEER_ID=peer
       - CORE_PEER_ADDRESS=peer:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer:7051
-      - CORE_PEER_LOCALMSPID=DEFAULT
+      - CORE_PEER_LOCALMSPID=PEER
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -59,19 +59,19 @@ services:
     environment:
       - FABRIC_LOGGING_SPEC=DEBUG
       - GOPATH=/opt/gopath
-      - CORE_PEER_ID=cli
+      - CORE_PEER_ID=PEER
       - CORE_PEER_ADDRESS=peer:7051
-      - CORE_PEER_LOCALMSPID=DEFAULT
+      - CORE_PEER_LOCALMSPID=PEER
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-    working_dir: /opt/gopath/src/chaincodedev
+    working_dir: /opt/gopath/src/chaincodedev/chaincode
     command:
       - /bin/bash
       - -c
       # Peer の起動が終わるまで待つよう sleep 10 を加えている
       - |
-        # sleep 10 &&
         tail -f /dev/null &&
+        sleep 10 &&
         ls &&
         echo "----- peer channel create -c mychannel -f mychannel.tx -o orderer:7050" &&
         peer channel create -c mychannel -f mychannel.tx -o orderer:7050 &&
@@ -81,9 +81,9 @@ services:
         tail -f /dev/null
     volumes:
       - /var/run/:/host/var/run/
+      - ${HLF_SMP_CHAINDEV_DIR}/fabric/configtx.yaml:/etc/hyperledger/fabric/configtx.yaml
       - ${HLF_SMP_CHAINDEV_DIR}/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp:/etc/hyperledger/msp
-      - ${HLF_SMP_CHAINDEV_DIR}/../chaincode:/opt/gopath/src/chaincodedev/chaincode
-      - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/chaincodedev/
+      - ${HLF_SMP_CHAINDEV_DIR}/:/opt/gopath/src/chaincodedev/chaincode
       - ../:/opt/gopath/src/${GO_MODULE_NAME}
     depends_on:
       - orderer

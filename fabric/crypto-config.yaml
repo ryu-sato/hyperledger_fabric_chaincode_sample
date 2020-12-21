@@ -1,3 +1,12 @@
+OrdererOrgs:
+  - Name: Org
+    Domain: example.com
+    EnableNodeOUs: false
+    Template:
+      Count: 1
+    Users:
+      Count: 0
+
 PeerOrgs:
   - Name: Org1
     Domain: org1.example.com

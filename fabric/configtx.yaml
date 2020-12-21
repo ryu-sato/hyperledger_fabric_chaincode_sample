@@ -1,45 +1,72 @@
-Orderer: &OrdererDefaults
-  OrdererType: solo
-  Organizations: {}
-
 Application: &ApplicationDefaults
   Organizations: {}
+  Policies:
+    Readers:
+      Type: Signature
+      Rule: "OR('PEER.member')"
+    Writers:
+      Type: Signature
+      Rule: "OR('PEER.member')"
+    Admins:
+      Type: Signature
+      Rule: "OR('PEER.member')"
 
-Channel: &ChannelDefaults
-
-Organizations:
-  - &Org1
-    Name: Org1
-    ID: DEFAULT
-    MSPDir: crypto-config/peerOrganizations/org1.example.com/msp/
+Organizations: &Organizations
+  - Name: Org
+    ID: ORDERER
+    MSPDir: crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/msp
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('DEFAULT.member')"
+        Rule: "OR('ORDERER.member')"
       Writers:
         Type: Signature
-        Rule: "OR('DEFAULT.member')"
+        Rule: "OR('ORDERER.member')"
       Admins:
         Type: Signature
-        Rule: "OR('DEFAULT.member')"
+        Rule: "OR('ORDERER.member')"
+  - Name: Org1
+    ID: PEER
+    MSPDir: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('PEER.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('PEER.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('PEER.member')"
     AnchorPeers:
       - Host: peer0.org1.example.com
         Port: 7051
 
+Channel:
+  Policies:
+    Readers:
+      Type: Signature
+      Rule: "OR('PEER.member')"
+    Writers:
+      Type: Signature
+      Rule: "OR('PEER.member')"
+    Admins:
+      Type: Signature
+      Rule: "OR('PEER.member')"
+
 Profiles:
   Genesis:
     Orderer:
-      <<: *OrdererDefaults
-      Organizations:
-        - *Org1
+      OrdererType: solo
+      Organizations: *Organizations
+    Application:
+      <<: *ApplicationDefaults
+      Organizations: *Organizations
     Consortiums:
       SampleConsortium:
-        Organizations:
-          - *Org1
+        Organizations: *Organizations
   Channel:
     Consortium: SampleConsortium
-    Application: {}
-    # Application:
-    #   <<: *ApplicationDefaults
-    #   Organizations:
-    #     - *Org1
+    Application:
+      <<: *ApplicationDefaults
+      Organizations: *Organizations
