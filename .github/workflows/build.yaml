@@ -27,7 +27,7 @@ jobs:
       if: always()
       with:
         type: ${{ job.status }}
-        job_name: '*${{ job.workflow }}*'
+        job_name: '*${{ github.workflow }}*'
         channel: ${{ secrets.SLACK_CHANNEL }}
         isCompactMode: true
         url: ${{ secrets.SLACK_WEBHOOK_URL }}
