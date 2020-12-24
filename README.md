@@ -1,3 +1,5 @@
+![Build chaincode](https://github.com/ryu-sato/hyperledger_fabric_chaincode_sample/workflows/Build%20chaincode/badge.svg)
+
 # Hyperledger fabric を開発モードで実行する
 
 ```bash
