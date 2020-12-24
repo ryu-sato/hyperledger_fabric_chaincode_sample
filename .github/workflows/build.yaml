@@ -22,12 +22,12 @@ jobs:
     #   SLACK_WEBHOOK_URL: SlackのWEBHOOK URL
     #   SLACK_CHANNEL    : Slackのチャンネル名(ex. "#SOME_CHANNEL_NAME")
     # 
-    - name: Slack Notification
-      uses: weseek/ghaction-slack-notification@master
-      if: always()
-      with:
-        type: ${{ job.status }}
-        job_name: '*${{ github.workflow }}*'
-        channel: ${{ secrets.SLACK_CHANNEL }}
-        isCompactMode: true
-        url: ${{ secrets.SLACK_WEBHOOK_URL }}
+    # - name: Slack Notification
+    #   uses: weseek/ghaction-slack-notification@master
+    #   if: always()
+    #   with:
+    #     type: ${{ job.status }}
+    #     job_name: '*${{ github.workflow }}*'
+    #     channel: ${{ secrets.SLACK_CHANNEL }}
+    #     isCompactMode: true
+    #     url: ${{ secrets.SLACK_WEBHOOK_URL }}
