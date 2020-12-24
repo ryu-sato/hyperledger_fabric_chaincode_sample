@@ -1,5 +1,7 @@
 ![Build chaincode](https://github.com/ryu-sato/hyperledger_fabric_chaincode_sample/workflows/Build%20chaincode/badge.svg)
 
+ryu-sato/hyperledger_fabric_chaincode_sample は Hyperlegder fabric の chaincode サンプルです。
+
 # Hyperledger fabric を開発モードで実行する
 
 ```bash
