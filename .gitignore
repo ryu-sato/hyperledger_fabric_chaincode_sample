@@ -1,5 +1,4 @@
-chaincode_sample
+hyperledger_fabric_chaincode_sample
 hello
 fabric/crypto-config
 myc.block
-

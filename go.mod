@@ -1,4 +1,4 @@
-module github.com/ryu-sato/chaincode_sample
+module github.com/ryu-sato/hyperledger_fabric_chaincode_sample
 
 go 1.14
 

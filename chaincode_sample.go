@@ -10,7 +10,7 @@ import (
 	"github.com/hyperledger/fabric/protos/peer"
 )
 
-var logger = shim.NewLogger("chaincode_sample")
+var logger = shim.NewLogger("hyperledger_fabric_chaincode_sample")
 
 type SmartContract struct {
 }
