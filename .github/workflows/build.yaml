@@ -1,0 +1,33 @@
+name: chaincode CI
+on: push
+
+jobs:
+  build-chaincode:
+    runs-on: ubuntu-latest
+    container:
+      image: hyperledger/fabric-ccenv:1.4.7
+      env:
+        CHAINCODE_DIR: ./
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    - name: Build
+      run: |
+        cd "$CHAINCODE_DIR"
+        go get -v -t -d ./...
+        go build -v .
+
+    # [オプション]
+    # Actionの実行結果をSlack通知をする場合は GitHub の secret に以下を追加する
+    #   SLACK_WEBHOOK_URL: SlackのWEBHOOK URL
+    #   SLACK_CHANNEL    : Slackのチャンネル名(ex. "#SOME_CHANNEL_NAME")
+    # 
+    - name: Slack Notification
+      uses: weseek/ghaction-slack-notification@master
+      if: always()
+      with:
+        type: ${{ job.status }}
+        job_name: '*{{ job.name }}*'
+        channel: ${{ secrets.SLACK_CHANNEL }}
+        isCompactMode: true
+        url: ${{ secrets.SLACK_WEBHOOK_URL }}
